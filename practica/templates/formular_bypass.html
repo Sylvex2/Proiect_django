@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formular Bypass</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/formular_bypass.css' %}">
+    <!-- Includerea jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    {% include "navbar.html" %}
+
+    <div class="formular">
+        <h1>Bypass Form</h1>
+
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <script>
+                    function updateStationList(selectElement) {
+                        var tipStatie = selectElement.value;
+                        var url = '/get-stations/' + tipStatie + '/';  // URL-ul pentru a obține stațiile
+
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function (data) {
+                                var selectBox = document.getElementById("id_nume_statie");
+                                selectBox.innerHTML = "";  // Golește selectul înainte de populare
+                                for (var i = 0; i < data.length; i++) {
+                                    var option = document.createElement("option");
+                                    option.value = data[i].id;
+                                    option.text = data[i].nume;
+                                    selectBox.add(option);
+                                }
+                                // Afișează câmpul după populare
+                                document.getElementById("id_nume_statie").style.display = 'block';
+                            },
+                            error: function (xhr, status, error) {
+                                alert("A apărut o eroare: " + error);
+                            }
+                        });
+                    }
+
+                    function populateStationInfo(selectElement) {
+                        var statieId = selectElement.value;
+                        var tipStatie = document.getElementById('id_tip_statie').value;
+                        var url = '/get-station-details/' + tipStatie + '/' + statieId + '/';
+
+                        $.ajax({
+                            url: url,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function (data) {
+                                document.getElementById('id_cod_statie').value = data.cod_statie;
+                                document.getElementById('id_info_statie').value = data.info_statie;
+                            },
+                            error: function (xhr, status, error) {
+                                alert("A apărut o eroare la popularea informațiilor despre stație: " + error);
+                            }
+                        });
+                    }
+                </script>
+
+                <button class="button-submit" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
